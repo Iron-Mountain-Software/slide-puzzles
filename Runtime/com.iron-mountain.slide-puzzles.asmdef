@@ -1,0 +1,14 @@
+{
+    "name": "com.iron-mountain.slide-puzzles",
+    "rootNamespace": "IronMountain.SlidePuzzles",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
