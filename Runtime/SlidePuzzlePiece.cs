@@ -11,6 +11,7 @@ namespace IronMountain.SlidePuzzles
     [RequireComponent(typeof(RectTransform))]
     public class SlidePuzzlePiece : MonoBehaviour, IPointerDownHandler
     {
+        public event Action OnCauseMovement;
         public event Action OnCurrentCoordinatesChanged;
         
         [SerializeField] private Image image;
@@ -97,7 +98,11 @@ namespace IronMountain.SlidePuzzles
         public void OnPointerDown(PointerEventData eventData)
         {
             if (!_slidePuzzle) return;
-            if (_slidePuzzle.IsValidPieceToMove(CurrentCoordinates)) Move();
+            if (_slidePuzzle.IsValidPieceToMove(CurrentCoordinates))
+            {
+                Move();
+                OnCauseMovement?.Invoke();
+            }
             else if (_slidePuzzle.IsValidLineToSlide(CurrentCoordinates))
             {
                 List<Vector2Int> coordinatesToSlide = new List<Vector2Int>();
@@ -132,6 +137,7 @@ namespace IronMountain.SlidePuzzles
                     SlidePuzzlePiece piece = _slidePuzzle.GetPiece(coordinates);
                     if (piece) piece.Move();
                 }
+                OnCauseMovement?.Invoke();
             }
         }
 

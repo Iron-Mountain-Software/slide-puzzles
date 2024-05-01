@@ -8,6 +8,7 @@ namespace IronMountain.SlidePuzzles
 {
     public class SlidePuzzle : MonoBehaviour
     {
+        public event Action OnMovesChanged;
         public event Action OnSolvedChanged;
     
         [Header("Settings")]
@@ -23,6 +24,8 @@ namespace IronMountain.SlidePuzzles
         [Header("Cache")]
         private List<SlidePuzzlePiece> _pieces = new ();
         private Vector2Int _emptySpace = Vector2Int.zero;
+
+        private int _moves;
         private bool _solved;
         private bool _shuffling;
 
@@ -36,6 +39,17 @@ namespace IronMountain.SlidePuzzles
             set => _emptySpace = value;
         }
 
+        public int Moves
+        {
+            get => _moves;
+            private set
+            {
+                if (_moves == value) return;
+                _moves = value;
+                OnMovesChanged?.Invoke();
+            }
+        }
+        
         public bool Solved
         {
             get => _solved;
@@ -84,6 +98,9 @@ namespace IronMountain.SlidePuzzles
         {
             foreach (SlidePuzzlePiece piece in _pieces)
             {
+                if (!piece) continue;
+                piece.OnCauseMovement -= OnPieceCauseMovement;
+                piece.OnCurrentCoordinatesChanged -= OnPieceCoordinatesChanged;
                 Destroy(piece.gameObject);
             }
             _pieces.Clear();
@@ -92,6 +109,7 @@ namespace IronMountain.SlidePuzzles
 
         private void SpawnPieces()
         {
+            Moves = 0;
             DestroyPieces();
             if (!texture) return;
             int textureSegmentWidth = texture ? Mathf.FloorToInt((float) texture.width / size) : 0;
@@ -105,6 +123,7 @@ namespace IronMountain.SlidePuzzles
                     SlidePuzzlePiece piece = Instantiate(piecePrefab, pieceParent).Initialize(this, trueCoordinates);
                     piece.name = "Slide Puzzle Piece (" + x + ", " + y + ")";
                     SetPiece(trueCoordinates, piece);
+                    piece.OnCauseMovement += OnPieceCauseMovement;
                     piece.OnCurrentCoordinatesChanged += OnPieceCoordinatesChanged;
                     if (texture)
                     {
@@ -125,6 +144,11 @@ namespace IronMountain.SlidePuzzles
             SetPiece(_emptySpace, null);
         }
 
+        private void OnPieceCauseMovement()
+        {
+            Moves++;
+        }
+        
         private void OnPieceCoordinatesChanged()
         {
             if (_shuffling) return;
@@ -180,6 +204,7 @@ namespace IronMountain.SlidePuzzles
                 }
             }
             while (!ShuffleIsValid() || TestSolution());
+            Moves = 0;
             Solved = false;
             _emptySpace = new Vector2Int(size - 1, size - 1);
             SetPiece(_emptySpace, null);
